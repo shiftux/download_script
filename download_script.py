@@ -40,8 +40,7 @@ series=[
 "game.of.thrones",
 "new.girl",
 "greys.anatomy",
-"girls.s03",
-"nashville"
+"girls.s03"
 ]
 
 movies=[
