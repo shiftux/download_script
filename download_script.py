@@ -23,7 +23,7 @@ from datetime import datetime
 # global vars
 #################
 
-#downloading = False
+downloading = False
 url = 'http://www.wrzko.eu/feed/'
 
 series=[
@@ -40,8 +40,7 @@ series=[
 "game.of.thrones",
 "new.girl",
 "greys.anatomy",
-"girls.s03",
-"nashville"
+"girls.s03"
 ]
 
 movies=[
@@ -62,14 +61,6 @@ def getId():
 	s=id.find("p=")+2
 	gotId=id[s:len(id)]
 	return gotId"""
-
-def init():
-	if not os.path.isfile(".pyload/downloadedIds"):
-		subprocess.call("touch .pyload/downloadedIds", shell=True)
-	if not os.path.isfile(".pyload/download_log.txt"): 
-		subprocess.call("touch .pyload/download_log.txt", shell=True)	
-	if not os.path.isfile(".pyload/temp_links.txt"):
-		subprocess.call("touch .pyload/temp_links.txt", shell=True)
 
 def writeId(id):
 	f=open(".pyload/downloadedIds", 'a')
@@ -134,7 +125,7 @@ def getLinks():
 			final = links	
 	return final
 
-def checkSeries(title):
+def checkSeries():
 	result=False
 	for x in series:
 		if title.find(x.lower())>-1:
@@ -156,16 +147,11 @@ def writeLog(title):
 	f.close()
 	
 def writeLinks(links):
-	f=open(".pyload/temp_links.txt", 'a')
+	f=open(".pyload/links.txt", 'a')
 	for line in links:
 		f.write(line+"\n")
 	f.close()
 	toDownload=[]
-
-def replace_links_file():
-	subprocess.call("rm .pyload/links.txt", shell=True)
-	subprocess.call("mv .pyload/temp_links.txt .pyload/links.txt", shell=True)  
-	
 
 """def writeSeries():
 	f=open("series", 'w')
@@ -179,7 +165,6 @@ def replace_links_file():
 
 wrzko = feedparser.parse(url)
 toDownload=[]
-init()
 
 for entry in wrzko.entries:
 
@@ -189,8 +174,7 @@ for entry in wrzko.entries:
 	cont=str(entry.content)
 
 	#download the entry if it is a desired serie
-	if checkSeries(title) and not checkDownloaded(id):
-		print("doing it for " + title)
+	if checkSeries() and not checkDownloaded(id):
 		links = getLinks()
 		if title.find("&") >-1:
 			title=title[0:title.find("&")]
@@ -205,7 +189,8 @@ for entry in wrzko.entries:
 		writeLog(title)
 		writeLinks(toDownload)
 		time.sleep(1)
-		#downloading=True
+		downloading=True
+		#print("written series")
 	#else:
 		#print("noooo")
 
@@ -224,7 +209,7 @@ for entry in wrzko.entries:
 		writeLog(title)
 		writeLinks(toDownload)
 		time.sleep(1)
-		#downloading=True
+		downloading=True
 	#else:
 		#print("noooo")
 
@@ -237,8 +222,6 @@ if not downloading:
 	time.sleep(1)
 	subprocess.call("/usr/share/pyload/pyLoadCore.py --daemon", shell=True) 
 	"""
-
-replace_links_file()
 
 print("script executed at " + str(datetime.now().time()) + " " + str(datetime.now().date()))
 
