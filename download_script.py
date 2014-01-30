@@ -190,7 +190,6 @@ for entry in wrzko.entries:
 
 	#download the entry if it is a desired serie
 	if checkSeries(title) and not checkDownloaded(id):
-		print("doing it for " + title)
 		links = getLinks()
 		if title.find("&") >-1:
 			title=title[0:title.find("&")]
