@@ -13,6 +13,10 @@ wrzko.entries[0].id 		#gives a unique id of the post
 wrzko.entries[0].content 	#gives the content of the entry (here all the links are stored)
 """
 
+# To do: 
+# - check if pyloader is online
+# - maybe leave temp_links file to inspect it
+
 import feedparser
 import os
 import subprocess
@@ -39,6 +43,7 @@ series=[
 "futurama",
 "game.of.thrones",
 "new.girl",
+"anger.management",
 "greys.anatomy",
 "girls.s03"
 ]
@@ -62,6 +67,14 @@ def getId():
 	gotId=id[s:len(id)]
 	return gotId"""
 
+def init():
+	if not os.path.isfile(".pyload/downloadedIds"):
+		subprocess.call("touch .pyload/downloadedIds", shell=True)
+	if not os.path.isfile(".pyload/download_log.txt"): 
+		subprocess.call("touch .pyload/download_log.txt", shell=True)	
+	if not os.path.isfile(".pyload/temp_links.txt"):
+		subprocess.call("touch .pyload/temp_links.txt", shell=True)
+
 def writeId(id):
 	f=open(".pyload/downloadedIds", 'a')
 	f.writelines(id+"\n")
@@ -83,8 +96,17 @@ def checkDownloaded(id):
 		return False
 
 def getLinks():
+	#find out what type of uploaded links are present
+	if cont.find("ul.to") > -1:
+		ullinks = "ul.to"
+	elif cont.find("uploaded.net") > -1:
+		ullinks = "uploaded.net"
+	else:
+		ullinks = "xxxxxxxxx"
+		writeLog("!!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!! could not find UL links")
+
 	#get the uploaded part of the text
-	startindex=cont.find("ul.to")
+	startindex=cont.find(ullinks)
 	endindex=cont.find("\"", startindex, len(cont))
 
 	indices=[startindex]
@@ -96,7 +118,7 @@ def getLinks():
 
 	#find all other uploaded parts
 	while startindex>0:
-		startindex=cont.find("ul.to", startindex+5, len(cont))
+		startindex=cont.find(ullinks, startindex+5, len(cont))
 		if startindex == -1:
 			for i in range(len(indices)):
 				if i % 2 == 0:
@@ -125,7 +147,7 @@ def getLinks():
 			final = links	
 	return final
 
-def checkSeries():
+def checkSeries(title):
 	result=False
 	for x in series:
 		if title.find(x.lower())>-1:
@@ -147,11 +169,15 @@ def writeLog(title):
 	f.close()
 	
 def writeLinks(links):
-	f=open(".pyload/links.txt", 'a')
+	f=open(".pyload/temp_links.txt", 'a')
 	for line in links:
 		f.write(line+"\n")
 	f.close()
-	toDownload=[]
+
+def replace_links_file():
+	subprocess.call("rm .pyload/links.txt", shell=True)
+	subprocess.call("mv .pyload/temp_links.txt .pyload/links.txt", shell=True)  
+	
 
 """def writeSeries():
 	f=open("series", 'w')
@@ -165,6 +191,7 @@ def writeLinks(links):
 
 wrzko = feedparser.parse(url)
 toDownload=[]
+init()
 
 for entry in wrzko.entries:
 
@@ -174,7 +201,7 @@ for entry in wrzko.entries:
 	cont=str(entry.content)
 
 	#download the entry if it is a desired serie
-	if checkSeries() and not checkDownloaded(id):
+	if checkSeries(title) and not checkDownloaded(id):
 		links = getLinks()
 		if title.find("&") >-1:
 			title=title[0:title.find("&")]
@@ -187,15 +214,12 @@ for entry in wrzko.entries:
 			toDownload.append(x)
 		writeId(id)
 		writeLog(title)
-		writeLinks(toDownload)
 		time.sleep(1)
-		downloading=True
-		#print("written series")
+		#downloading=True
 	#else:
 		#print("noooo")
 
 
-	
 	if checkMovies() and not checkDownloaded(id):
 		links = getLinks()
 		toDownload.append("["+title+"]")
@@ -207,9 +231,8 @@ for entry in wrzko.entries:
 			toDownload.append(x)
 		writeId(id)
 		writeLog(title)
-		writeLinks(toDownload)
 		time.sleep(1)
-		downloading=True
+		#downloading=True
 	#else:
 		#print("noooo")
 
@@ -222,6 +245,9 @@ if not downloading:
 	time.sleep(1)
 	subprocess.call("/usr/share/pyload/pyLoadCore.py --daemon", shell=True) 
 	"""
+
+writeLinks(toDownload)
+replace_links_file()
 
 print("script executed at " + str(datetime.now().time()) + " " + str(datetime.now().date()))
 
