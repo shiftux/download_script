@@ -13,6 +13,11 @@ wrzko.entries[0].id 		#gives a unique id of the post
 wrzko.entries[0].content 	#gives the content of the entry (here all the links are stored)
 """
 
+# To do: 
+# - check if pyloader is online
+# - understand why only one line gets read
+# - maybe leave temp_links file to inspect it
+
 import feedparser
 import os
 import subprocess
@@ -39,6 +44,7 @@ series=[
 "futurama",
 "game.of.thrones",
 "new.girl",
+"anger.management",
 "greys.anatomy",
 "girls.s03"
 ]
